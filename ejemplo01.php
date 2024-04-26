@@ -7,7 +7,7 @@ session_start();
 $pdo = new PDO(
      'mysql:host=localhost;dbname=mydatabase',
      'username',
-     'password');
+     '');
 
 // Function to validate user input
 function validateInput($data) {
@@ -56,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <h2>Login</h2>
-    <?= if(isset($error)) echo "<p style='color: red;'>$error</p>"; ?>
-    <form method="post" action="<?= echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    <?php if(isset($error)) echo "<p style='color: red;'>$error</p>"; ?>
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
         <label for="username">Username:</label><br>
         <input type="text" id="username" name="username"><br><br>
         <label for="password">Password:</label><br>
