@@ -1,13 +1,13 @@
 <?php
-
 // Start session
 session_start();
 
 // Database connection
 $pdo = new PDO(
-     'mysql:host=localhost;dbname=mydatabase',
-     'root',
-     '' );
+    'mysql:host=localhost;dbname=mydatabase',
+    'root',
+    ''
+);
 
 // Function to validate user input
 function validateInput($data) {
@@ -27,24 +27,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Hash the password
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check user credentials against the database
+    // Check if username already exists
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->execute([$username]);
-    $user = $stmt->fetch();
+    $existingUser = $stmt->fetch();
 
-    // Verify password hash
-    if ($user && password_verify($password, $user['password'])) {
-        // Set session variables
-        $_SESSION['username'] = $user['username'];
-        // Redirect to dashboard
-        header("Location: dashboard.php");
-        exit();
+    if ($existingUser) {
+        $error = "El nombre de usuario ya está en uso.";
     } else {
-        // Invalid username or password
-        $error = "Usuario o contraseña inválidos.";
+        // Insert new user into the database
+        $insertStmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        $insertStmt->execute([$username, $hashedPassword]);
+        
+        // Set session variables
+        $_SESSION['username'] = $username;
+        // Redirect to dashboard or any other page
+        header("Location: registro_exitoso.php");
+        exit();
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -52,17 +53,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Registro</title>
 </head>
 <body>
-    <h2>Login</h2>
+    <h2>Registro</h2>
     <?php if(isset($error)) echo "<p style='color: red;'>$error</p>"; ?>
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-        <label for="username">Username:</label><br>
+    <form method="post" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+        <label for="username">Nombre de usuario:</label><br>
         <input type="text" id="username" name="username"><br><br>
-        <label for="password">Password:</label><br>
+        <label for="password">Contraseña:</label><br>
         <input type="password" id="password" name="password"><br><br>
-        <input type="submit" value="Login">
+        <input type="submit" value="Registrar">
     </form>
 </body>
 </html>
